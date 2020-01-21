@@ -2,7 +2,7 @@ import dispatcher
 import cnn1
 import torch.nn.functional as F
 import torch.optim as optim
-
+import torch
 
 
 def correct_preds(preds, labels):
@@ -13,48 +13,35 @@ def correct_preds(preds, labels):
 
 def train():
 
-    data_loader = dispatcher.data_loader
-    images, labels = next(iter(data_loader))
+    batch_loader = dispatcher.batch_loader
+    images, labels = next(iter(batch_loader))
 
     model = cnn1.CNN1()
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
-
-    '''
-    ############## step by step iterations #######
-
-    preds = model(images)
-    loss = F.cross_entropy(preds, labels)
-    print(f"initial loss: {loss.item()}")
+    optimizer = optim.Adam(model.parameters(), lr=0.003)
 
     
-    loss.backward() # Calculate Gradients
-    optimizer.step() # Update weights
+    for epoch in range(4):
 
-    preds = model(images)
-    loss = F.cross_entropy(preds, labels)
-    print(f"loss after one iter: {loss.item()}")
-    '''
+        total_loss = 0
+        total_correct = 0
+
+        for batch in batch_loader:
+            images, labels = batch
+        
+            preds = model(images) # forward prop ==> get predictions
+            loss = F.cross_entropy(preds, labels) # calculate loss
+            optimizer.zero_grad() # zero the grads
+            loss.backward() # backward prop ==> calculate gradients
+            optimizer.step() # update weights
+        
+            total_loss += loss.item()
+            total_correct += correct_preds(preds, labels)
+
+        print(f"epoch: {epoch} ==> total correct: {total_correct} and total loss: {total_loss}")
+
     
-
-    total_loss = 0
-    total_correct = 0
-
-    for batch in data_loader:
-        images, labels = batch
-        
-        preds = model(images) # forward prop ==> get predictions
-        loss = F.cross_entropy(preds, labels) # calculate loss
-        optimizer.zero_grad() # zero the grads
-        loss.backward() # backward prop ==> calculate gradients
-        optimizer.step() # update weights
-        
-        total_loss += loss.item()
-        total_correct += correct_preds(preds, labels)
-
-    print(f"total correct: {total_correct} and total loss: {total_loss}")
-
-
-
+    torch.save(model, f'{dispatcher.res_path}cnn1.pt')
+    #return model
 
 
 
