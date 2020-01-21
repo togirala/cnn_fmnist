@@ -13,7 +13,7 @@ input_training_set = ds.FashionMNIST(
         )
 
 # data_loader = data.DataLoader(input_training_set, batch_size=4, shuffle=True, num_workers=args.nThreads)
-data_loader = data.DataLoader(input_training_set, batch_size=4, shuffle=True)
+data_loader = data.DataLoader(input_training_set, batch_size=64, shuffle=True)
 
 
 
