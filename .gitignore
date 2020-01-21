@@ -127,3 +127,32 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# Project Folders
+input/
+models/
+data/
+target/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
