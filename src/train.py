@@ -56,7 +56,7 @@ def train():
                 total_loss += loss.item() * bs
                 total_correct += correct_preds(preds, labels)
 
-            print(f"epoch: {epoch} ==> total correct: {total_correct} and total loss: {total_loss}")
+            # print(f"epoch: {epoch} ==> total correct: {total_correct} and total loss: {total_loss}")
         
             if tb_status:
                 tb.add_scalar('Loss', total_loss, epoch)
