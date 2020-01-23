@@ -160,6 +160,7 @@ def train():
     model = d.get_model()
     r = Run()
     e = Epoch()  ### continue from here
+    
     for run in r.get_runs(d.get_parameters()):
         
 
@@ -176,6 +177,9 @@ def train():
                 
                 images = batch[0]
                 labels = batch[1]
+                
+                images.to(device)
+                labels.to(device)
 
                 preds = model(images) # forward prop ==> get predictions
                 loss = F.cross_entropy(preds, labels) # calculate loss
