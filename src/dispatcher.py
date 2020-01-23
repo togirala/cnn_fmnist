@@ -5,7 +5,7 @@ from collections import OrderedDict
 from collections import namedtuple
 from itertools import product
 import cnn1
-
+import torch
 
 
 class Dispatcher():
@@ -19,12 +19,12 @@ class Dispatcher():
         self.model = None
         self.batch_data = None
         self.resource_path = None
-    
-
+        self.device = None    
+        self.epochs = 10
 
     def get_model(self):
         
-        self.model = cnn1.CNN1()
+        self.model = cnn1.CNN1().to(self.get_device())
         
         return self.model
 
@@ -34,7 +34,7 @@ class Dispatcher():
         
         self.parameters = OrderedDict(
                 lr = [0.01, 0.001]
-                ,bs = [100, 1000]
+                ,bs = [100, 1000, 10000]
                 # ,shuffle = []
                 )
 
@@ -72,7 +72,14 @@ class Dispatcher():
         return self.resource_path
     
 
+    def get_device(self):
 
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda:0')
+        else:
+            self.device = torch.device('cpu')
+        
+        return self.device
 
 
 

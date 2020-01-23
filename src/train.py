@@ -39,7 +39,7 @@ class Run():
     
     
     
-    def begin(self, run, model, batch_loader):
+    def begin(self, run, model, batch_loader, device):
 
         self.start_time = time.time()
         
@@ -51,9 +51,9 @@ class Run():
         self.tb = SummaryWriter(comment = f'-{run}')
         
         images, labels = next(iter(batch_loader))
-        grid = torchvision.utils.make_grid(images)
+        grid = torchvision.utils.make_grid(images.to(device))
         self.tb.add_image('images', grid)
-        self.tb.add_graph(model, images)
+        self.tb.add_graph(model, images.to(device))
 
         
 
@@ -158,24 +158,29 @@ def train():
     # param_values = [v for v in parameters.values()]
     d = dispatcher.Dispatcher()
     model = d.get_model()
+    print(f'model created on {d.device}')
+    
     r = Run()
-    e = Epoch()  ### continue from here
+    e = Epoch() 
+
     for run in r.get_runs(d.get_parameters()):
         
+        # model = d.get_model()
 
-
-        model = d.get_model()
         optimizer = optim.Adam(model.parameters(), lr=run.lr)
         batch_loader = d.get_data_batch(batch_size = run.bs)
     
-        r.begin(run, model, batch_loader)
-        for epoch in range(2):
+        r.begin(run, model, batch_loader, device=d.device)
+        for epoch in range(d.epochs):
             
             e.begin()
             for batch in batch_loader:
                 
-                images = batch[0]
-                labels = batch[1]
+                images = batch[0].to(d.device)
+                labels = batch[1].to(d.device)
+                
+                # images.to(d.device)
+                # labels.to(d.device)
 
                 preds = model(images) # forward prop ==> get predictions
                 loss = F.cross_entropy(preds, labels) # calculate loss
@@ -190,8 +195,9 @@ def train():
             e.end(run = r, model = model, data = batch_loader) ### continue from here
 
 
-        print(r.results)
         r.end(e)
+        print(f'#{r.count} lr: {run.lr}, bs: {run.bs} - accuracy: {e.accuracy} - run time: {r.duration}')
+    
     
     res_path = d.get_resource_path()
     r.save(fileName = f'{res_path}results')
