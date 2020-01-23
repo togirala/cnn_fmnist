@@ -20,11 +20,11 @@ class Dispatcher():
         self.batch_data = None
         self.resource_path = None
         self.device = None    
-
+        self.epochs = 10
 
     def get_model(self):
         
-        self.model = cnn1.CNN1().to(get_device())
+        self.model = cnn1.CNN1().to(self.get_device())
         
         return self.model
 
@@ -34,7 +34,7 @@ class Dispatcher():
         
         self.parameters = OrderedDict(
                 lr = [0.01, 0.001]
-                ,bs = [100, 1000]
+                ,bs = [100, 1000, 10000]
                 # ,shuffle = []
                 )
 
