@@ -8,7 +8,8 @@ from itertools import product
 from collections import OrderedDict
 from collections import namedtuple
 import time
-
+import pandas as pd
+import json
 
 class Run():
     
@@ -17,11 +18,11 @@ class Run():
         self.count = 0
         self.results = list()
         self.start_time = None
-
+        self.duration = None
         self.tb = None
 
         self.data = None
-        # self.model = None
+        # self.model = model
 
 
     @staticmethod
@@ -56,16 +57,17 @@ class Run():
 
         
 
-    def end(self):
+    def end(self, e):
 
-        self.Epoch.count = 0
+        e.count = 0
+        self.duration = time.time() - self.start_time
         self.tb.close()
 
 
 
     def save(self, fileName):
 
-        pd.DataFrame.from_dict(self.results, orient='columns').to_csv(f'{fileNmae}.csv')
+        pd.DataFrame.from_dict(self.results, orient='columns').to_csv(f'{fileName}.csv')
         with open(f'{fileName}.json', 'w', encoding='utf-8') as f:
             json.dump(self.results, f, ensure_ascii=False, indent=4)
 
@@ -81,9 +83,9 @@ class Epoch():
     def __init__(self):
         self.count = 0
         self.start_time = None
-        self.loss = 0
-        self.accuracy = 0
-        
+        self.loss = None
+        self.accuracy = None
+        self.duration = None
 
     def begin(self):
 
@@ -93,8 +95,9 @@ class Epoch():
         self.accuracy = 0
 
 
-    def end(self, run, data):
-        duration = time.time() - self.start_time
+
+    def end(self, run, model, data):
+        self.duration = time.time() - self.start_time
         
         loss = self.loss / len(data.dataset)
         accuracy = self.accuracy / len(data.dataset)
@@ -103,16 +106,16 @@ class Epoch():
         run.tb.add_scalar('Accuracy: ', accuracy, self.count)
 
         for name, param in model.named_parameters():
-            self.add_histogram(name, param, self.count)
-            self.add_histogram(f'{name}.grad', param.grad, self.count)
+            run.tb.add_histogram(name, param, self.count)
+            run.tb.add_histogram(f'{name}.grad', param.grad, self.count)
 
         results = OrderedDict()
-        results['run'] = Run.count
-        results['epoch'] = count
-        results['loss'] = loss
-        results['accuracy'] = accuracy
-        results['epoch duration'] = duration
-        results['run duration'] = Run.duration
+        results['run'] = run.count
+        results['epoch'] = self.count
+        results['loss'] = self.loss
+        results['accuracy'] = self.accuracy
+        results['epoch duration'] = self.duration
+        results['run duration'] = run.duration
         
         for k, v in run.params._asdict().items(): results[k] = v
 
@@ -126,11 +129,14 @@ class Epoch():
     def track_accuracy(self, preds, labels):
         self.accuracy += self._get_accuracy(preds, labels)
 
+
+    # Current implementation; accuracy ==> no:of current predictions
     @torch.no_grad()
     def _get_accuracy(self, preds, labels):
 
         return preds.argmax(dim=1).eq(labels).sum().item()
 
+    # currently not being used
     def save(self, fileName):
 
         pd.DataFrame.from_dict(run.results, orient='columns').to_csv(f'{fileNmae}.csv')
@@ -151,8 +157,9 @@ def train():
 
     # param_values = [v for v in parameters.values()]
     d = dispatcher.Dispatcher()
+    model = d.get_model()
     r = Run()
-    e = Epoch(r)  ### continue from here
+    e = Epoch()  ### continue from here
     for run in r.get_runs(d.get_parameters()):
         
 
@@ -162,7 +169,7 @@ def train():
         batch_loader = d.get_data_batch(batch_size = run.bs)
     
         r.begin(run, model, batch_loader)
-        for epoch in range(5):
+        for epoch in range(2):
             
             e.begin()
             for batch in batch_loader:
@@ -180,16 +187,17 @@ def train():
                 e.track_accuracy(preds, labels)
 
             # print(e.accuracy)
-            e.end(r, batch_loader) ### continue from here
+            e.end(run = r, model = model, data = batch_loader) ### continue from here
 
 
-        r.end()
-
-    r.save('results')
-    print(f'run')
-
+        print(r.results)
+        r.end(e)
     
+    res_path = d.get_resource_path()
+    r.save(fileName = f'{res_path}results')
     torch.save(model, f'{res_path}cnn1.pt')
+
+    #print(r.results)
     #return model
 
 

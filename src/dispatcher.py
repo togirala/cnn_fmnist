@@ -18,22 +18,29 @@ class Dispatcher():
         self.parameters = None
         self.model = None
         self.batch_data = None
+        self.resource_path = None
     
-    def get_model(self):
 
-        return cnn1.CNN1()
+
+    def get_model(self):
+        
+        self.model = cnn1.CNN1()
+        
+        return self.model
+
 
 
     def get_parameters(self):
         
-        parameters = OrderedDict(
+        self.parameters = OrderedDict(
                 lr = [0.01, 0.001]
                 ,bs = [100, 1000]
                 # ,shuffle = []
                 )
 
-        return parameters
+        return self.parameters
         
+
 
     def get_dataset(self):
         return ds.FashionMNIST(
@@ -45,43 +52,25 @@ class Dispatcher():
 
         
 
-
-
     def get_data_batch(self, batch_size = 256, shuffle = False, num_workers = 1):
         
-        batch_data = torch.utils.data.DataLoader(
+        self.batch_data = torch.utils.data.DataLoader(
                 dataset = self.get_dataset(),
                 batch_size = batch_size,
                 shuffle = shuffle,
                 num_workers = num_workers
                 )
     
-        return batch_data
+        return self.batch_data
 
-    
-    # @staticmethod
-    def get_runs():
+
+
+    def get_resource_path(self):
+
+        self.resource_path = 'models/'
         
-        params = get_parameters()
-        run = namedtuple('run', param.keys())
-        runs = list()
- 
-        for v in product(*params.values()):
-            runs.append(run(*v))
-
-        return runs
-
-
-
-
-
-
-    #res_path = 'models/'
-
-
-
-            
-
+        return self.resource_path
+    
 
 
 
