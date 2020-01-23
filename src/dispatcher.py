@@ -17,6 +17,7 @@ class Dispatcher():
         self.test_set = None
         self.parameters = None
         self.model = None
+        self.batch_data = None
     
     def get_model(self):
 
@@ -35,28 +36,31 @@ class Dispatcher():
         
 
     def get_dataset(self):
-        self.training_set = ds.FashinMNIST(
+        return ds.FashionMNIST(
                 root = 'input/',
                 train = True,
                 download = True,
                 transform = transforms.Compose([transforms.ToTensor()])
                 )
 
+        
+
 
 
     def get_data_batch(self, batch_size = 256, shuffle = False, num_workers = 1):
+        
         batch_data = torch.utils.data.DataLoader(
-                dataset = get_dataset()
+                dataset = self.get_dataset(),
                 batch_size = batch_size,
-                shuffle = shuffle
+                shuffle = shuffle,
                 num_workers = num_workers
                 )
     
         return batch_data
 
     
-    @staticmethod
-    def get_runs(self):
+    # @staticmethod
+    def get_runs():
         
         params = get_parameters()
         run = namedtuple('run', param.keys())
