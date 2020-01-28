@@ -9,12 +9,12 @@ class CNN2(nn.Module):
     def __init__(self):
         super(CNN2, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels = 1, out_channels = 32, kernel_size=3)
-        self.conv2 = nn.Conv2d(in_channels = 32, out_channels = 16, kernel_size=3)
-        self.conv3 = nn.Conv2d(in_channels = 16, out_channels = 12, kernel_size=3)
+        self.conv1 = nn.Conv2d(in_channels = 1, out_channels = 32, kernel_size=5)
+        self.conv2 = nn.Conv2d(in_channels = 32, out_channels = 16, kernel_size=5)
+        self.conv3 = nn.Conv2d(in_channels = 16, out_channels = 12, kernel_size=5)
     
 
-        self.fc1 = nn.Linear(in_features = 12*16*16, out_features = 200)
+        self.fc1 = nn.Linear(in_features = 12*10*10, out_features = 200)
         self.fc2 = nn.Linear(in_features = 200, out_features = 80)
         self.out = nn.Linear(in_features = 80, out_features = 10)
 
@@ -48,7 +48,7 @@ class CNN2(nn.Module):
 
 
         # 5th Layer
-        t = t.reshape(-1, 12*16*16)
+        t = t.reshape(-1, 12*10*10)
         t = self.fc1(t)
         t = F.relu(t)
         # print(f"shape of tensor after 4th layer is {t.shape}")
